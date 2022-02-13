@@ -1,0 +1,14 @@
+---
+  - name: Playbook
+    hosts: my-vm
+    become_user: root
+    tasks:
+      - name: create random file called 5gProj
+        file:
+          path: /home/user/ansible-test
+          state: touch
+      - name: ensure docker is started
+        service:
+          name: docker
+          state: started
+
