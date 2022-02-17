@@ -1,14 +1,65 @@
 ---
   - name: Playbook
     hosts: my-vm
-    become_user: root
+    become: yes
     tasks:
-      - name: create random file called 5gProj
-        file:
-          path: /home/user/ansible-test
-          state: touch
+      - name: Update apt cache
+        apt: update_cache=yes cache_valid_time=3600
+
+      - name: Upgrade all apt packages
+        apt: upgrade=dist
+
+      - name: Install dependencies
+        apt:
+          name: "{{ packages }}"
+          state: present
+          update_cache: yes
+        vars:
+          packages:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - gnupg-agent
+
+      - name: Add an apt signing key for Docker
+        apt_key:
+          url: https://download.docker.com/linux/ubuntu/gpg
+          state: present
+
+      - name: Add apt repository for stable version
+        apt_repository:
+          repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+          state: present
+      - name: Install Docker
+        apt:
+          name: "{{ packages }}"
+          state: present
+          update_cache: yes
+        vars:
+          packages:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+
+
+      # - name: install docker-ce
+      #   apt:
+      #     name: docker-ce
+      #     state: latest
+      # - name: install docker-ce-cli
+      #   apt:
+      #     name: docker-ce-cli
+      #     state: latest
+      # - name: install containerd.io
+      #   apt:
+      #     name: containerd.io
+      #     state: latest
+
+            
       - name: ensure docker is started
         service:
           name: docker
           state: started
+          enabled: yes
 
