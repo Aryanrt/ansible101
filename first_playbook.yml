@@ -2,6 +2,7 @@
   - name: Playbook
     hosts: my-vm
     become: yes
+
     tasks:
       - name: Update apt cache
         apt: update_cache=yes cache_valid_time=3600
@@ -41,25 +42,37 @@
           - docker-ce
           - docker-ce-cli
           - containerd.io
-
-
-      # - name: install docker-ce
-      #   apt:
-      #     name: docker-ce
-      #     state: latest
-      # - name: install docker-ce-cli
-      #   apt:
-      #     name: docker-ce-cli
-      #     state: latest
-      # - name: install containerd.io
-      #   apt:
-      #     name: containerd.io
-      #     state: latest
-
-            
       - name: ensure docker is started
         service:
           name: docker
           state: started
           enabled: yes
+
+      - name: Install ignite depedencies
+        apt:
+          name: "{{ packages }}"
+          state: present
+          update_cache: yes
+        vars:
+          packages:
+          - openssh-client
+          - git
+          - binutils
+          - containerd
+          
+      - name: Download Ignite binary
+        get_url:
+          url: https://github.com/weaveworks/ignite/releases/download/v0.10.0/ignite-amd64
+          dest: /usr/local/bin/ignite
+          mode: 0755
+      
+      - name: Install Ignite binary
+        get_url:
+          url: https://github.com/weaveworks/ignite/releases/download/v0.10.0/ignite-amd64
+          dest: /usr/local/bin/ignite
+          mode: 0755
+        get_url:
+          url: https://github.com/weaveworks/ignite/releases/download/v0.10.0/ignited-amd64
+          dest: /usr/local/bin/ignited
+          mode: 0755
 
